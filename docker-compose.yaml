@@ -1,0 +1,59 @@
+version: '2'
+
+services:
+  nginx:
+    ports:
+      - "9100:80"
+    container_name: pdp-nginx
+    build:
+      context: docker/nginx
+    volumes:
+      - .:/var/www/app
+    links:
+      - php
+    networks:
+      default:
+  db:
+    image: mariadb:10.5.22
+    container_name: pdp-db
+    cap_add:
+      - SYS_NICE
+    restart: always
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    ports:
+      - '3308:3306'
+    volumes:
+      - db:/var/lib/mysql
+    #extra_hosts:
+    #  - "host.docker.internal:172.0.0.1"
+    networks:
+      - default
+  php:
+    container_name: pdp-php
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/app
+    links:
+      - db:mysql
+    networks:
+      - default
+networks:
+  default:
+
+volumes:
+  db:
+  db-data:
+
