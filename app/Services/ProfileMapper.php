@@ -2,18 +2,16 @@
 
 namespace App\Services;
 
-class ClubMapper extends AbstractMapper
+class ProfileMapper extends AbstractMapper
 {
     protected static array $validFields = [
         self::OPERATION_CREATE => [
-            'name',
-            'is_active',
+            'age',
             'created_at',
             'updated_at',
         ],
         self::OPERATION_UPDATE => [
-            'name',
-            'is_active',
+            'age',
             'updated_at',
         ],
     ];
@@ -22,8 +20,7 @@ class ClubMapper extends AbstractMapper
     {
         return [
             'id' => $data->id,
-            'name' => $data->name,
-            'isActive' => $data->is_active,
+            'age' => $data->age,
             'createdAt' => $data->created_at ?? null,
             'updatedAt' => $data->updated_at ?? null,
         ];
@@ -33,8 +30,7 @@ class ClubMapper extends AbstractMapper
     {
         return [
             'id' => $data['id'] ?? null,
-            'name' => $data['name'],
-            'is_active' => $data['isActive'],
+            'age' => $data['age'],
             'created_at' => $data['createdAt'] ?? null,
             'updated_at' => $data['updatedAt'] ?? null,
         ];

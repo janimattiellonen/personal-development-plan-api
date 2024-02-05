@@ -10,17 +10,20 @@ class StudentService
 {
     public function createUser(array $data): int
     {
-        $now = new \DateTime();
-        $data['created_at'] = $now;
-        $data['updated_at'] = $now;
-        $data['password'] = Hash::make($data['password']);
-
         $age = $data['age'];
-        unset($data['age']);
 
-        $createdUserId = DB::table('users')->insertGetId($data);
+        $student = StudentMapper::toDTO($data);
 
-       return DB::table('profiles')->insertGetId([
+        $now = new \DateTime();
+        $student['created_at'] = $now;
+        $student['updated_at'] = $now;
+        $student['password'] = Hash::make($data['password']);
+
+        $studentSanitized = StudentMapper::sanitizeData($student, AbstractMapper::OPERATION_CREATE);
+
+        $createdUserId = DB::table('users')->insertGetId($studentSanitized);
+
+        return DB::table('profiles')->insertGetId([
             'age' => $age,
             'user_id' => $createdUserId,
             'created_at' => $now,

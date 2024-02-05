@@ -8,23 +8,31 @@ class ExerciseService
 {
     public function createExercise(array $data): int
     {
+        $exercise = ExerciseMapper::toDTO($data);
+
         $now = new \DateTime();
-        $data['created_at'] = $now;
-        $data['updated_at'] = $now;
+        $exercise['created_at'] = $now;
+        $exercise['updated_at'] = $now;
+
+        $exerciseSanitized = ExerciseMapper::sanitizeData($exercise, AbstractMapper::OPERATION_CREATE);
 
         return DB::table('exercises')->insertGetId(
-            $data
+            $exerciseSanitized
         );
     }
 
     public function updateExercise(int $id, array $data): int
     {
+        $exercise = ExerciseMapper::toDTO($data);
+
         $now = new \DateTime();
-        $data['updated_at'] = $now;
+        $exercise['updated_at'] = $now;
+
+        $exerciseSanitized = ExerciseMapper::sanitizeData($exercise, AbstractMapper::OPERATION_UPDATE);
 
         $result = DB::table('exercises')
             ->where('id', $id)
-            ->update($data);
+            ->update($exerciseSanitized);
 
         if ($result === 0) {
             throw new NotFoundException(sprintf('Could not update exercise with the given id %d, as no exercise with that id exists', $id));

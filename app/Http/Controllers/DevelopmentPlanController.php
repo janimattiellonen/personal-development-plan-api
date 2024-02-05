@@ -20,6 +20,7 @@ class DevelopmentPlanController
     public function update(int $id, Request $request, DevelopmentPlanService $service)
     {
         $data = $request->post();
+
         $service->updateDevelopmentPlan($id, $data);
 
         return response()->json(['status' => true], 201);

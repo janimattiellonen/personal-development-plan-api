@@ -7,87 +7,90 @@ use \DateTime;
 
 class DevelopmentPlanService
 {
-    public function createPersonalPlan(array $data): int
+
+    protected function buildAndSaveTrainingSessionData(array $trainingSessions, int $operation, int $personalPlanId): array
     {
         $now = new DateTime();
-        $data['created_at'] = $now;
-        $data['updated_at'] = $now;
 
-        $data['starts_at'] = new DateTime($data['starts_at']);
+        return array_map(
+            function ($trainingSessionData) use ($personalPlanId, $now, $operation) {
+
+                $trainingSessionData['personalPlanId'] = $personalPlanId;
+                $trainingSession = TrainingSessionMapper::toDTO($trainingSessionData);
+                $trainingSession['created_at'] = $now;
+                $trainingSession['updated_at'] = $now;
+
+                $trainingSession['starts_at'] = new DateTime($trainingSession['starts_at']);
+
+                if (!empty($trainingSession['ends_at'])) {
+                    $trainingSession['ends_at'] = new DateTime($trainingSession['ends_at']);
+                }
+
+                $trainingSession['personal_plan_id'] = $personalPlanId;
+                $trainingSessionSanitized = TrainingSessionMapper::sanitizeData($trainingSession, $operation);
+
+                DB::table('training_sessions')->insert($trainingSessionSanitized);
+            },
+            $trainingSessions
+        );
+
+    }
+    public function createPersonalPlan(array $data): int
+    {
+        $developmentPlan = DevelopmentPlanMapper::toDTO($data);
+
+        $now = new DateTime();
+        $developmentPlan['created_at'] = $now;
+        $developmentPlan['updated_at'] = $now;
+
+        $developmentPlan['starts_at'] = new DateTime($developmentPlan['starts_at']);
 
         if (!empty($data['ends_at'])) {
-            $data['ends_at'] = new DateTime($data['ends_at']);
+            $developmentPlan['ends_at'] = new DateTime($developmentPlan['ends_at']);
         }
 
-        return DB::transaction(function () use ($data, $now) {
-            $trainingSessions = $data['training_sessions'];
+        $developmentPlanSanitized = DevelopmentPlanMapper::sanitizeData($developmentPlan, AbstractMapper::OPERATION_CREATE);
 
-            unset($data['training_sessions']);
+        return DB::transaction(function () use ($developmentPlanSanitized, $data, $now) {
+            $trainingSessions = $data['trainingSessions'];
 
-            $developmentPlanId = DB::table('personal_plans')->insertGetId($data);
+            $developmentPlanId = DB::table('personal_plans')->insertGetId($developmentPlanSanitized);
 
             if (count($trainingSessions)) {
-                array_map(
-                    function ($trainingSession) use ($developmentPlanId, $now) {
-                        $trainingSession['created_at'] = $now;
-                        $trainingSession['updated_at'] = $now;
-
-                        $trainingSession['starts_at'] = new DateTime($trainingSession['starts_at']);
-
-                        if (!empty($trainingSession['ends_at'])) {
-                            $trainingSession['ends_at'] = new DateTime($trainingSession['ends_at']);
-                        }
-
-                        $trainingSession['personal_plan_id'] = $developmentPlanId;
-                        DB::table('training_sessions')->insert($trainingSession);
-                    },
-                    $trainingSessions
-                );
+                $this->buildAndSaveTrainingSessionData($trainingSessions, AbstractMapper::OPERATION_CREATE, $developmentPlanId);
             }
 
             return $developmentPlanId;
         });
     }
 
+
     public function updateDevelopmentPlan(int $id, array $data)
     {
-        $now = new DateTime();
-        $data['updated_at'] = $now;
+        $developmentPlan = DevelopmentPlanMapper::toDTO($data);
 
-        $data['starts_at'] = new DateTime($data['starts_at']);
+        $now = new DateTime();
+        $developmentPlan['updated_at'] = $now;
+
+        $developmentPlan['starts_at'] = new DateTime($developmentPlan['starts_at']);
 
         if (!empty($data['ends_at'])) {
-            $data['ends_at'] = new DateTime($data['ends_at']);
+            $developmentPlan['ends_at'] = new $developmentPlan($data['ends_at']);
         }
 
-        return DB::transaction(function () use ($data, $now, $id) {
+        $developmentPlanSanitized = DevelopmentPlanMapper::sanitizeData($developmentPlan, AbstractMapper::OPERATION_UPDATE);
+
+        return DB::transaction(function () use ($data, $developmentPlanSanitized, $now, $id) {
             $this->removeTrainingSessionsFromDevelopmentPlan($id);
 
-            $trainingSessions = $data['training_sessions'];
-
-            unset($data['training_sessions']);
+            $trainingSessions = $data['trainingSessions'];
 
             DB::table('personal_plans')
                 ->where('id', '=' , $id)
-                ->update($data);
+                ->update($developmentPlanSanitized);
 
             if (count($trainingSessions)) {
-                array_map(
-                    function ($trainingSession) use ($id, $now) {
-                        $trainingSession['created_at'] = $now;
-                        $trainingSession['updated_at'] = $now;
-
-                        $trainingSession['starts_at'] = new DateTime($trainingSession['starts_at']);
-
-                        if (!empty($trainingSession['ends_at'])) {
-                            $trainingSession['ends_at'] = new DateTime($trainingSession['ends_at']);
-                        }
-
-                        $trainingSession['personal_plan_id'] = $id;
-                        DB::table('training_sessions')->insert($trainingSession);
-                    },
-                    $trainingSessions
-                );
+                $this->buildAndSaveTrainingSessionData($trainingSessions, AbstractMapper::OPERATION_UPDATE, $id);
             }
         });
     }
@@ -114,8 +117,22 @@ class DevelopmentPlanService
                 'ts.starts_at as ts_starts_at',
                 'ts.ends_at as ts_ends_at'
             )
-            ->addSelect('student.id as s_id', 'student.first_name as s_first_name', 'student.last_name as s_last_name', 'student.email as s_email' )
-            ->addSelect('instructor.id as i_id', 'instructor.first_name as i_first_name', 'instructor.last_name as i_last_name', 'instructor.email as i_email' )
+            ->addSelect(
+                'student.id as s_id',
+                'student.first_name as s_first_name',
+                'student.last_name as s_last_name',
+                'student.email as s_email',
+                'student.type as s_type',
+                'student.user_role as s_user_role'
+            )
+            ->addSelect(
+                'instructor.id as i_id',
+                'instructor.first_name as i_first_name',
+                'instructor.last_name as i_last_name',
+                'instructor.email as i_email',
+                'instructor.type as i_type',
+                'instructor.user_role as i_user_role'
+            )
             ->leftJoin('users as student', 'pp.student_id', '=', 'student.id')
             ->leftJoin('users as instructor', 'pp.instructor_id', '=', 'instructor.id')
             ->leftJoin('training_sessions as ts', 'ts.personal_plan_id', '=', 'pp.id')
@@ -138,13 +155,16 @@ class DevelopmentPlanService
                         'first_name' => $row->s_first_name,
                         'last_name' => $row->s_last_name,
                         'email' => $row->s_email,
+                        'type' => $row->s_type,
+                        'user_role' => $row->s_user_role,
                     ],
                     'instructor' => [
                         'id' => $row->i_id,
                         'first_name' => $row->i_first_name,
                         'last_name' => $row->i_last_name,
                         'email' => $row->i_email,
-
+                        'type' => $row->i_type,
+                        'user_role' => $row->i_user_role,
                     ],
                 ];
                 $hydrated[$row->pp_id] = $item;
@@ -157,13 +177,12 @@ class DevelopmentPlanService
                     'is_active' => $row->ts_is_active,
                     'starts_at' => $row->ts_starts_at ? (new DateTime($row->pp_starts_at))->format('Y-m-d') : null,
                     'ends_at' => $row->ts_ends_at ? (new DateTime($row->pp_ends_at))->format('Y-m-d') : null,
+                    'personal_plan_id' => $row->ts_personal_plan_id,
                 ];
             }
-
-
         }
 
-        return count($hydrated) === 1 ? array_values($hydrated)[0] : [];
+        return count($hydrated) === 1 ? DevelopmentPlanMapper::fromDTO((object)array_values($hydrated)[0]) : [];
     }
 
     public function getDevelopmentPlans(): array
@@ -218,10 +237,13 @@ class DevelopmentPlanService
                     'name' => $row->ts_name
                 ];
             }
-
-
         }
 
-        return array_values($hydrated);
+        return array_values(array_map(
+            function ($developmentPlan) {
+                return DevelopmentPlanMapper::fromDTO((object)$developmentPlan);
+            },
+            $hydrated
+        ));
     }
 }
