@@ -53,9 +53,19 @@ class ExerciseService
 
     public function getExercises()
     {
-        return DB::table('exercises')
+        $result = DB::table('exercises')
             ->orderBy('name', 'ASC')
             ->get(['id', 'name', 'description','instructions', 'url', 'youtube_url', 'is_active']);
+
+
+        return array_values(
+            array_map(
+                function ($exercise) {
+                    return ExerciseMapper::fromDTO((object)$exercise);
+                },
+                $result->toArray()
+            )
+        );
     }
 
 }
