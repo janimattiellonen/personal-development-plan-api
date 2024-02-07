@@ -38,7 +38,7 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (\Exception $e, Request $request) {
             return response()->json([
-                'message' => 'Server error: ' . $e->getMessage(),
+                'message' => '(Temporary message): Server error: ' . $e->getMessage(),
             ], 500);
         });
     }
