@@ -4,17 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Services\StudentService;
 use Illuminate\Http\Request;
-
+use App\Http\Requests\StudentRequest;
 
 class StudentController
 {
-    public function create(Request $request, StudentService $studentService)
+    public function create(StudentRequest $request, StudentService $studentService)
     {
         $data = $request->post();
 
         $userId = $studentService->createUser($data);
 
         return response()->json(['status' => true, 'id' => $userId], 201);
+    }
+
+    public function getAllStudents(StudentService $studentService)
+    {
+        return $studentService->getAllStudents();
     }
 
     public function findStudents(Request $request, StudentService $studentService)

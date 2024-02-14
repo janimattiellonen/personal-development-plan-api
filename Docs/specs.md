@@ -34,7 +34,6 @@
 
 
 
-
 ## Migrations
 
 ### Create new migration
@@ -65,5 +64,52 @@ personal development plan.
 This way, we minimize the access to young players.
 
 A "super admin" may see a broader list of users.
+
+
+## Features
+
+- Development plans
+  - [ ] Create a new development plan
+  - [ ] Edit a development plan
+  - [ ] List all development plans
+  - [ ] Remove a development plan
+  - Root aggregate: yes
+
+- Training sessions
+  - [ ] Create a new training session for a selected development plan
+  - [ ] Edit a training session
+  - [ ] List all training sessions that belongs to a selected development plan
+  - [ ] Remove a training session from a selected development plan
+  - Root aggregate: no. A training session makes no sense without a development plan.
+
+- Exercises
+  - [ ] Create a new exercise
+  - [ ] Edit an exercise
+  - [ ] List all exercises
+  - [ ] Remove an exercise from a selected training session
+  - Root aggregate: yes. Exercises are shareable activities that can be used in multiple training sessions.
+
+- Clubs
+  - [ ] Create a new club
+  - [ ] Edit a club
+  - [ ] List all clubs
+  - [ ] Remove a club
+  - Root aggregate: yes
+
+- Students
+  - [ ] Create a new student
+  - [ ] Edit a student
+  - [ ] List all students
+  - [ ] Remove a student
+  - Root aggregate: yes
+
+## Repositories
+
+A repository should be created for an entity, if the entity can function on its own.
+
+
+
+
+
 
 

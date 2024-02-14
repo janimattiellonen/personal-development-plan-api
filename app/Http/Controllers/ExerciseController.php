@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Services\ExerciseService;
 use Illuminate\Http\Request;
+use App\Http\Requests\ExerciseRequest;
 
 class ExerciseController
 {
-    public function create(Request $request, ExerciseService $exerciseService)
+    public function create(ExerciseRequest $request, ExerciseService $exerciseService)
     {
         $data = $request->post();
 
@@ -16,13 +17,20 @@ class ExerciseController
         return response()->json(['status' => true, 'id' => $exerciseId], 201);
     }
 
-    public function update(int $id, Request $request, ExerciseService $exerciseService)
+    public function update(int $id, ExerciseRequest $request, ExerciseService $exerciseService)
     {
         $data = $request->post();
 
         $exerciseService->updateExercise($id, $data);
 
         return response()->json(['status' => true, 'id' => $id], 201);
+    }
+
+    public function remove(int $id, ExerciseService $exerciseService)
+    {
+        $status = $exerciseService->removeExercise($id);
+
+        return response()->json(['status' => true], $status ? 200 : 404);
     }
 
     public function getExercise(int $id, ExerciseService $exerciseService)

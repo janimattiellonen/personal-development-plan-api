@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Repositories\ClubRepository;
+use App\Services\Exception\RecordNotFoundException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Query\Builder;
 
 class ClubService
 {
+    public function __construct(protected ClubRepository $clubRepository) { }
+
     public function createClub(array $data): int
     {
         $now = new \DateTime();
@@ -15,18 +18,16 @@ class ClubService
         $club['createdAt'] = $now;
         $club['updatedAt'] = $now;
 
-        $clubSanitized = ClubMapper::sanitizeData($club, ClubMapper::OPERATION_CREATE);
+        $clubSanitized = ClubMapper::sanitizeData($club, AbstractMapper::OPERATION_CREATE);
 
-        return DB::table('clubs')->insertGetId(
-            $clubSanitized
-        );
+        return $this->clubRepository->createClub($clubSanitized);
     }
 
     /**
      * @param int $id
      * @param array $data
      * @return int
-     * @throws NotFoundException
+     * @throws RecordNotFoundException
      */
     public function updateClub(int $id, array $data): int
     {
@@ -35,27 +36,25 @@ class ClubService
         $club = ClubMapper::toDTO($data);
         $club['updatedAt'] = $now;
 
-        $clubSanitized = ClubMapper::sanitizeData($club, ClubMapper::OPERATION_UPDATE);
+        $clubSanitized = ClubMapper::sanitizeData($club, AbstractMapper::OPERATION_UPDATE);
 
-        $result = DB::table('clubs')
-            ->where('id', $id)
-            ->update($clubSanitized);
-
-        if ($result === 0) {
-            throw new NotFoundException(sprintf('Could not update club with the given id %d, as no club with that id exists', $id));
-        }
-
-        return $result;
+        return $this->clubRepository->updateClub($id, $clubSanitized);
     }
 
     public function removeClub(int $id): bool
     {
-        return DB::table('clubs')->delete($id) === 1;
+        return $this->clubRepository->removeClub($id);
     }
 
     public function getClub(int $id)
     {
-        return ClubMapper::fromDTO(DB::table('clubs')->orderBy('name', 'ASC')->find($id, ['id', 'name', 'is_active']));
+        $club = $this->clubRepository->getClub($id);
+
+        if (!$club) {
+            throw new RecordNotFoundException(sprintf('Could not find club with the given id %d', $id));
+        }
+
+        return ClubMapper::fromDTO($club);
     }
 
     public function getClubs()

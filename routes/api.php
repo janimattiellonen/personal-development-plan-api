@@ -7,6 +7,7 @@ use App\Http\Controllers\ClubController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\DevelopmentPlanController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\TrainingSessionController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -29,6 +30,7 @@ Route::middleware('api')->group(function () {
         Route::delete('clubs/{id}', [ClubController::class, 'remove']);
 
         Route::get('students', [StudentController::class, 'findStudents']);
+        Route::get('students/all', [StudentController::class, 'getAllStudents']);
         Route::post('students', [StudentController::class, 'create']);
 
         Route::post('development-plans', [DevelopmentPlanController::class, 'create']);
@@ -40,6 +42,10 @@ Route::middleware('api')->group(function () {
         Route::put('exercises/{id}', [ExerciseController::class, 'update']);
         Route::get('exercises', [ExerciseController::class, 'getExercises']);
         Route::get('exercises/{id}', [ExerciseController::class, 'getExercise']);
+        Route::delete('exercises/{id}', [ExerciseController::class, 'remove']);
+
+        Route::get('training-sessions/{id}', [TrainingSessionController::class, 'getTrainingSession']);
+
     });
 });
 

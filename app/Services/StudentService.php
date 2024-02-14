@@ -31,6 +31,11 @@ class StudentService
         ]);
     }
 
+    public function getAllStudents()
+    {
+        return DB::table('users')->get(['id', 'first_name', 'last_name', 'email']);
+    }
+
     public function searchStudents(string $searchTerm, string $type)
     {
         return DB::table('users')

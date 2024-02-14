@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Exception\RecordNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class ExerciseService
@@ -35,7 +36,7 @@ class ExerciseService
             ->update($exerciseSanitized);
 
         if ($result === 0) {
-            throw new NotFoundException(sprintf('Could not update exercise with the given id %d, as no exercise with that id exists', $id));
+            throw new RecordNotFoundException(sprintf('Could not update exercise with the given id %d, as no exercise with that id exists', $id));
         }
 
         return $result;
@@ -43,12 +44,18 @@ class ExerciseService
 
     public function getExercise(int $id)
     {
-        return ExerciseMapper::fromDTO((object)DB::table('exercises')
+        $result = DB::table('exercises')
             ->orderBy('name', 'ASC')
             ->find(
                 $id,
                 ['id', 'name', 'description','instructions', 'url', 'youtube_url', 'is_active']
-            ));
+            );
+
+        if (!$result) {
+            throw new RecordNotFoundException(sprintf('Could not find exercise with the given id %d', $id));
+        }
+
+        return ExerciseMapper::fromDTO((object)$result);
     }
 
     public function getExercises()
@@ -68,4 +75,8 @@ class ExerciseService
         );
     }
 
+    public function removeExercise(int $id): bool
+    {
+        return DB::table('exercises')->delete($id) === 1;
+    }
 }

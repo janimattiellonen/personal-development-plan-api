@@ -2,11 +2,13 @@
 
 namespace App\Exceptions;
 
-use App\Services\NotFoundException;
-use Illuminate\Http\Request;
+use App\Services\Exception\RecordNotFoundException;
+use App\Services\Exception\BaseException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Throwable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -30,10 +32,23 @@ class Handler extends ExceptionHandler
            Log::error($e->getMessage());
         });
 
-        $this->renderable(function (NotFoundException $e, Request $request) {
+        $this->renderable(function (RecordNotFoundException $e, Request $request) {
             return response()->json([
                 'message' => 'Record not found',
             ], 404);
+        });
+
+        $this->renderable(function (BaseException $e, Request $request) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        });
+
+        $this->renderable(function (ValidationException $e, Request $request) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors()
+            ], $e->status);
         });
 
         $this->renderable(function (\Exception $e, Request $request) {
@@ -41,5 +56,6 @@ class Handler extends ExceptionHandler
                 'message' => '(Temporary message): Server error: ' . $e->getMessage(),
             ], 500);
         });
+
     }
 }

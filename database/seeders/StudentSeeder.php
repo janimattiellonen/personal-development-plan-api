@@ -168,6 +168,50 @@ class StudentSeeder extends Seeder
      */
     public function run(): void
     {
+        // first create a couple of predetermined users: students and instructors that can be used in tests, where
+        // known users are needed
+
+        $studentId = DB::table('users')->insertGetId([
+            'id' => 1,
+            'name' => 'Steve Student',
+            'first_name' => 'Steve',
+            'last_name' => 'Student',
+            'email' => 'steve.student@example.com',
+            'password' => Hash::make('Steve Student'),
+            'type' => 'student',
+            'user_role' => 'user',
+            'created_at' => DB::raw('CURRENT_TIMESTAMP()'),
+            'updated_at' => DB::raw('CURRENT_TIMESTAMP()'),
+        ]);
+
+        DB::table('profiles')->insert([
+            'age' => 27,
+            'user_id' => $studentId,
+            'created_at' => DB::raw('CURRENT_TIMESTAMP()'),
+            'updated_at' => DB::raw('CURRENT_TIMESTAMP()'),
+        ]);
+
+
+        $instructorId = DB::table('users')->insertGetId([
+            'id' => 2,
+            'name' => 'Ian Instructor',
+            'first_name' => 'Ian',
+            'last_name' => 'Instructor',
+            'email' => 'ian.instructor@example.com',
+            'password' => Hash::make('Ian Instructor'),
+            'type' => 'student',
+            'user_role' => 'user',
+            'created_at' => DB::raw('CURRENT_TIMESTAMP()'),
+            'updated_at' => DB::raw('CURRENT_TIMESTAMP()'),
+        ]);
+
+        DB::table('profiles')->insert([
+            'age' => 27,
+            'user_id' => $instructorId,
+            'created_at' => DB::raw('CURRENT_TIMESTAMP()'),
+            'updated_at' => DB::raw('CURRENT_TIMESTAMP()'),
+        ]);
+
         foreach (range(1, 25) as $index) {
             $firstName = $this->firstNames[rand(0, count($this->firstNames) - 1)];
             $lastName = $this->lastNames[rand(0, count($this->lastNames) - 1)];
