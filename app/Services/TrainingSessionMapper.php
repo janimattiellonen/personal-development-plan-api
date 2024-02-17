@@ -34,6 +34,12 @@ class TrainingSessionMapper extends AbstractMapper
             'isActive' => $data->is_active ?? null,
             'createdAt' => $data->created_at ?? null,
             'updatedAt' => $data->updated_at ?? null,
+            'exercises' => array_map(
+                function ($exercise) {
+                    return ExerciseMapper::fromDTO((object)$exercise);
+                },
+                $data->exercises ?? []
+            )
         ];
     }
 

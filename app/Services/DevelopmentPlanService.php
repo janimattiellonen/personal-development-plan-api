@@ -176,8 +176,8 @@ class DevelopmentPlanService
                     'id' => $row->ts_id,
                     'name' => $row->ts_name,
                     'is_active' => $row->ts_is_active,
-                    'starts_at' => $row->ts_starts_at ? (new DateTime($row->pp_starts_at))->format('Y-m-d') : null,
-                    'ends_at' => $row->ts_ends_at ? (new DateTime($row->pp_ends_at))->format('Y-m-d') : null,
+                    'starts_at' => $row->ts_starts_at ? (new DateTime($row->ts_starts_at))->format('Y-m-d') : null,
+                    'ends_at' => $row->ts_ends_at ? (new DateTime($row->ts_ends_at))->format('Y-m-d') : null,
                     'personal_plan_id' => $row->ts_personal_plan_id,
                 ];
             }

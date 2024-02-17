@@ -45,6 +45,9 @@ Route::middleware('api')->group(function () {
         Route::delete('exercises/{id}', [ExerciseController::class, 'remove']);
 
         Route::get('training-sessions/{id}', [TrainingSessionController::class, 'getTrainingSession']);
+        Route::get('training-sessions/{id}/available-exercises', [TrainingSessionController::class, 'getAvailableExercises']);
+        Route::delete('training-sessions/{id}/exercises/{exerciseId}', [TrainingSessionController::class, 'removeExercise']);
+        Route::post('training-sessions/{id}/exercises', [TrainingSessionController::class, 'addExercise']);
 
     });
 });
