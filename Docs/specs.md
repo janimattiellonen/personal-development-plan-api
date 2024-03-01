@@ -110,6 +110,63 @@ A repository should be created for an entity, if the entity can function on its 
 
 
 
+category: 
+  - id
+  - name
+  - parent_category_id
+  - is_active
+  - created_at
+  - updated_at
+
+CREATE TABLE category (
+id INT AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
+parent_category_id INT,
+is_active BOOLEAN NOT NULL DEFAULT true,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+FOREIGN KEY (parent_category_id) REFERENCES category(id)
+);
 
 
+SELECT 
+    c1.*
+FROM 
+    category c1
+LEFT JOIN 
+    category c2 on c2.id = c1.parent_category_id
+ORDER BY COALESCE(c2.id, c1.id), c1.id;
+
+
+
+INSERT INTO category (name, parent_category_id) VALUES
+('Car', NULL), -- Parent category
+('Animal', NULL) -- Parent category;
+
+
+
+INSERT INTO category (name, parent_category_id) VALUES
+('Ford', 1), -- Sub-category under 'SUV'
+('Chevrolet', 1), -- Sub-category under 'SUV'
+('Labrador', 2), -- Sub-category under 'Dog'
+('Persian', 2); -- Sub-category under 'Cat';
+
+
+
+
+INSERT INTO category (name, parent_category_id) VALUES
+('Car', NULL), -- Parent category
+('Animal', NULL), -- Parent category
+('SUV', 1), -- Child category under 'Car'
+('Truck', 1), -- Child category under 'Car'
+('Dog', 2), -- Child category under 'Animal'
+('Cat', 2); -- Child category under 'Animal'
+
+
+
+INSERT INTO category (name, parent_category_id) VALUES
+('Ford', 3), -- Sub-category under 'SUV'
+('Chevrolet', 3), -- Sub-category under 'SUV'
+('Labrador', 5), -- Sub-category under 'Dog'
+('Persian', 6); -- Sub-category under 'Cat'
 

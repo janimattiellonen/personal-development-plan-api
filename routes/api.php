@@ -8,6 +8,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\DevelopmentPlanController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\TrainingSessionController;
+use App\Http\Controllers\CategoryController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -48,6 +49,8 @@ Route::middleware('api')->group(function () {
         Route::get('training-sessions/{id}/available-exercises', [TrainingSessionController::class, 'getAvailableExercises']);
         Route::delete('training-sessions/{id}/exercises/{exerciseId}', [TrainingSessionController::class, 'removeExercise']);
         Route::post('training-sessions/{id}/exercises', [TrainingSessionController::class, 'addExercise']);
+
+        Route::get('categories', [CategoryController::class, 'getCategories']);
 
     });
 });
